@@ -1,0 +1,77 @@
+.home {
+	padding: 10px 20px;
+	min-height: 100%;
+	width: 100%;
+}
+
+.block {
+	background: #f5f5f5;
+	padding: 10px 30px;
+	border: 1px solid #eee;
+	margin-bottom: 20px;
+}
+
+.newbill {
+	width: 300px;
+	display: flex;
+	margin-right: 20px;
+}
+
+.bill select, .bill input {
+	width: 100%;
+}
+
+.billInner {
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	background-color: #fff;
+}
+
+.billInner > * + * {
+	margin-top: 10px;
+}
+
+.bill {
+	display: flex;
+	margin-right: 20px;
+	width: 150px;
+}
+
+.bills {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+}
+
+.input {
+	/* background: #fff; */
+}
+
+.list {
+	background: #fff;
+	border: 1px solid #eee;
+	max-width: 200px;
+	margin: 16px 0;
+	overflow: hidden;
+	width: 200px;
+}
+
+.listitem {
+	display: flex;
+	justify-content: space-between !important;
+}
+
+.newgroup {
+	width: 200px;
+	background-color: #fff;
+}
+
+.newgroupinner {
+	padding: 20px;
+}
+
+/* .select { */
+/* 	min-width: 200px; */
+/* } */
+
