@@ -12,16 +12,6 @@ import Checkbox from 'preact-material-components/Checkbox'
 import List from 'preact-material-components/List'
 import Icon from 'preact-material-components/Icon'
 
-import 'preact-material-components/List/style.css'
-// import 'preact-material-components/Button/style.css'
-// import 'preact-material-components/TextField/style.css'
-// import 'preact-material-components/Elevation/style.css'
-// import 'preact-material-components/Select/style.css'
-// import 'preact-material-components/List/style.css'
-// import 'preact-material-components/Menu/style.css'
-import 'preact-material-components/style.css'
-// import 'preact-material-components/Theme/mdc-theme.scss'
-
 class NewBill extends Component {
   constructor (props) {
     super()
@@ -80,43 +70,63 @@ class NewBill extends Component {
   render (props, state) {
     return (
       <div class={style.newbill}>
-        <Elevation z={1}>
-          <div class={style.billInner}>
-            <Select
-              hintText="Person that paid"
-              class={style.input}
-              selectedIndex={state.chosenIndex}
-              onChange={e => this.setGroup(e.target.selectedIndex)}
-            >
-              {props.groups.map(group => (
-                <Select.Item key={group}>{group}</Select.Item>
-              ))}
-            </Select>
-            <TextField
-              label="Amount"
-              type="number"
-              class={style.input}
-              step="any"
-              onChange={e => this.setAmount(e.target.value)}
-              value={state.amount}
-            />
-            <div>
-              {props.groups.map(g => {
-                return (
-                  <FormField key={g}>
-                    <Checkbox
-                      id={`basic-checkbox-${g}`}
-                      onChange={e => this.toggleSubGroup(g, e.target.checked)}
-                      checked={state.subGroup.includes(g)}
-                    />
-                    <label for={`basic-checkbox-${g}`}>{g}</label>
-                  </FormField>
-                )
-              })}
-            </div>
-            <Button onClick={e => this.onAdd()}>Add</Button>
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            this.onAdd()
+          }}
+          class={style.billInner}
+        >
+          <Select
+            fullwidth
+            hintText="Person that paid"
+            class={style.input}
+            selectedIndex={state.chosenIndex}
+            onChange={e => this.setGroup(e.target.selectedIndex)}
+          >
+            {props.groups.map(group => (
+              <Select.Item key={group}>{group.toUpperCase()}</Select.Item>
+            ))}
+          </Select>
+          <TextField
+            label="Amount"
+            type="number"
+            class={style.input}
+            step="any"
+            onChange={e => this.setAmount(e.target.value)}
+            value={state.amount}
+          />
+          <span>Divided between:</span>
+          <div class={style.peoplelist}>
+            {props.groups.map(g => {
+              const enabled = state.subGroup.includes(g)
+              return (
+                <span
+                  class={[
+                    style.person,
+                    enabled ? '' : style.persondisabled,
+                    style.persontoggle
+                  ].join(' ')}
+                  onClick={_ => this.toggleSubGroup(g, !enabled)}
+                >
+                  <span style={'text-transform: uppercase;'}>{g}</span>
+                  <a class={style.persondelete}>{enabled ? '×' : '+'}</a>
+                </span>
+              )
+              // return (
+              //   <FormField key={g}>
+              //     <Checkbox
+              //       id={`basic-checkbox-${g}`}
+              //       onChange={e => this.toggleSubGroup(g, e.target.checked)}
+              //       checked={state.subGroup.includes(g)}
+              //     />
+              //     <label for={`basic-checkbox-${g}`}>{g}</label>
+              //   </FormField>
+              // )
+            })}
           </div>
-        </Elevation>
+          <Button>Add</Button>
+        </form>
       </div>
     )
   }
@@ -129,20 +139,25 @@ const Normal = props => (
 class Bill extends Component {
   render (props) {
     return (
-      <div class={style.bill}>
-        <Elevation z={1}>
-          <div class={style.billInner}>
-            <h3 style={'margin: 5px 0 10px'}>
-              {props.group} <Normal>paid</Normal> {props.amount}
-            </h3>
-            <div>
-              Split between: <br /> <i>{props.subGroup.join(' ')}</i>
-            </div>
-            <Button onClick={e => this.props.onRemove(props.group)}>
-              Remove
-            </Button>
+      <div class={style.billline}>
+        <div class={style.billmain}>
+          <div class={style.billamount}>${props.amount}</div>
+          <span class={style.billperson}>{props.group.toUpperCase()}</span>
+        </div>
+        {props.subGroup.length !== props.totalList.length ? (
+          <div class={style.billsplit}>
+            <Icon style={'padding-right: 10px'}>group</Icon>
+            {props.subGroup.map((p, i, { length }) => {
+              return (
+                <span class={style.flex}>
+                  {p}
+                  {i !== length - 1 ? ',' : ''}
+                </span>
+              )
+            })}
           </div>
-        </Elevation>
+        ) : null}
+        <Button class={style.billremove} onClick={e => this.props.onRemove(props.group)}>Remove</Button>
       </div>
     )
   }
@@ -268,10 +283,12 @@ export default class Home extends Component {
     this.storeState({
       groups,
       peopleGroups,
-      bills: this.state.bills.map(bill => ({
-        ...bill,
-        subGroup: bill.subGroup.filter(p => p !== person)
-      })).filter(({ group, subGroup }) => group !== person && subGroup.length)
+      bills: this.state.bills
+        .map(bill => ({
+          ...bill,
+          subGroup: bill.subGroup.filter(p => p !== person)
+        }))
+        .filter(({ group, subGroup }) => group !== person && subGroup.length)
     })
   }
 
@@ -298,98 +315,133 @@ export default class Home extends Component {
   }
 
   render (props, state) {
-    console.log(state)
     var ownings = this.getOwnings()
     var groups = this.groups()
     return (
-      <div class={style.home}>
-        <h1>Bill splitter</h1>
-        <div class={style.block}>
-          <h2>1. Add people</h2>
-          <p>
-            <TextField
-              label="Name"
-              focus
-              class={style.input}
-              onChange={e => this.newGroupName(e.target.value)}
-              value={state.newGroupName}
-            />
-            <Button onClick={_ => this.addGroup()}>Add person</Button>
+      <div>
+        <div class={style.headertext}>
+          <h1 class={style.title}>Go Dutch!</h1>
+          <h5 class={style.subtitle}>And split those bills.</h5>
+        </div>
+        <div class={style.home}>
+          <div class={style.block}>
+            <h2>Who's in the group?</h2>
+            <p>
+              <form
+                class={style.personform}
+                onSubmit={e => {
+                  e.preventDefault()
+                  this.addGroup()
+                }}
+              >
+                <div class={style.personinput}>
+                  <TextField
+                    label="Name"
+                    fullwidth
+                    onChange={e => this.newGroupName(e.target.value)}
+                    value={state.newGroupName}
+                  />
+                </div>
+                <Button>Add person</Button>
+              </form>
 
-            {state.groups.length ? (
-              <List class={style.list}>
-                {state.groups.map(name => {
+              <div class={style.peoplelist}>
+                {state.groups.length
+                  ? state.groups.map(name => {
+                    return (
+                      <span class={style.person}>
+                        <span style={'text-transform: uppercase;'}>
+                          {name}
+                        </span>
+                        <a
+                          href="#"
+                          class={style.persondelete}
+                          onClick={_ => this.removePerson(name)}
+                        >
+                            ×
+                        </a>
+                      </span>
+                    )
+                  })
+                  : null}
+              </div>
+            </p>
+            <div />
+          </div>
+          {this.state.groups.length > 1 ? (
+            <div class={style.block}>
+              <h2>Add some bills</h2>
+              <div class={style.bills}>
+                <NewBill
+                  groups={state.groups}
+                  onAdd={(group, amount, subGroup) =>
+                    this.addBill(group, amount, subGroup)
+                  }
+                />
+                {state.bills.map(({ group, amount, subGroup }, i) => (
+                  <Bill
+                    key={i}
+                    group={group}
+                    amount={amount}
+                    subGroup={subGroup}
+                    totalList={state.groups}
+                    onRemove={_ => this.removeBill(i)}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {this.state.groups.length > 1 ? (
+            <div class={style.block}>
+              <h2>3. Group people</h2>
+              <NewGroup
+                onNewGroup={newGroup => this.groupPeople(newGroup)}
+                people={state.groups}
+                groups={state.peopleGroups}
+              />
+              {groups.length ? (
+                <List class={style.list}>
+                  {groups.map((g, i) => (
+                    <List.Item class={style.listitem}>
+                      <span>{g.join(' & ')}</span>
+                      {g.length > 1 ? (
+                        <a href="#" style="" onClick={_ => this.removeGroup(i)}>
+                          <Icon>delete</Icon>
+                        </a>
+                      ) : null}
+                    </List.Item>
+                  ))}
+                </List>
+              ) : null}
+            </div>
+          ) : null}
+
+          {this.state.groups.length > 1 ? (
+            <div class={style.block}>
+              <h2>4. Who owns what?</h2>
+              <List class={style.list} style={'width: 100%; max-width: none'}>
+                {Object.keys(ownings).map(owner => {
+                  const source = owner.split('+').join(' & ')
                   return (
-                    <List.Item key={name} class={style.listitem}>
-                      <span>{name}</span>
-                      <a href="#" style="" onClick={_ => this.removePerson(name)}>
-                        <Icon>delete</Icon>
-                      </a>
+                    <List.Item key={`${owner}`}>
+                      <strong style="padding-right: 10px">
+                        {source.toUpperCase() + ': '}
+                      </strong>
+                      {Object.keys(ownings[owner]).map(ownee => {
+                        var amount = ownings[owner][ownee]
+                        const target = ownee.split('+').join(' & ')
+                        return (
+                          <span>
+                            {target} <strong>{amount}</strong>
+                          </span>
+                        )
+                      })}
                     </List.Item>
                   )
                 })}
               </List>
-            ) : null}
-          </p>
-          <div />
-        </div>
-        <div class={style.block}>
-          <h2>2. Add bills</h2>
-          <div class={style.bills}>
-            <NewBill
-              groups={state.groups}
-              onAdd={(group, amount, subGroup) => this.addBill(group, amount, subGroup)
-              }
-            />
-            {state.bills.map(({ group, amount, subGroup }, i) => (
-              <Bill
-                key={i}
-                group={group}
-                amount={amount}
-                subGroup={subGroup}
-                onRemove={_ => this.removeBill(i)}
-              />
-            ))}
-          </div>
-        </div>
-        <div class={style.block}>
-          <h2>3. Group people</h2>
-          <NewGroup
-            onNewGroup={newGroup => this.groupPeople(newGroup)}
-            people={state.groups}
-            groups={state.peopleGroups}
-          />
-          {groups.length ? (
-            <List class={style.list}>
-              {groups.map((g, i) => (
-                <List.Item class={style.listitem}>
-                  <span>{g.join(' & ')}</span>
-                  {g.length > 1 ? (
-                    <a href="#" style="" onClick={_ => this.removeGroup(i)}>
-                      <Icon>delete</Icon>
-                    </a>
-                  ) : null}
-                </List.Item>
-              ))}
-            </List>
+            </div>
           ) : null}
-        </div>
-
-        <div class={style.block}>
-          <h2>4. Who owns what?</h2>
-          <List class={style.list} style={'width: 100%; max-width: none'}>
-            {Object.keys(ownings).map(owner => {
-              const source = owner.split('+').join(' & ')
-              return <List.Item key={`${owner}`} >
-                <strong style='padding-right: 10px'>{source.toUpperCase() + ': '}</strong>
-                {Object.keys(ownings[owner]).map(ownee => {
-                  var amount = ownings[owner][ownee]
-                  const target = ownee.split('+').join(' & ')
-                  return <span>{target} <strong>{amount}</strong></span>
-                })}
-              </List.Item>
-            })}
-          </List>
         </div>
       </div>
     )
