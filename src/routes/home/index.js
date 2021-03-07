@@ -253,7 +253,10 @@ class NewGroup extends Component {
           })}
         </div>
         {state.people.length > 1 ? (
+        <span>
+          <br/>
           <Button onClick={_ => this.createGroup()}>Create group</Button>
+        </span>
         ) : null}
       </div>
     )
@@ -366,14 +369,11 @@ export default class Home extends Component {
     var groups = this.groups()
     return (
       <div>
-        <div class={style.headertext}>
-          <h1 class={style.title}>Go Dutch!</h1>
-          <h5 class={style.subtitle}>And split those bills</h5>
-        </div>
+      <br/>
         <div class={style.home + ' ' + style.homewrapper}>
           <div class={style.block}>
-            <h2>Who's in the group?</h2>
-            <p>
+            <h2 class={style.blocktitle}>Who's in the group? (Add at least 2 people)</h2>
+            <div>
               <form
                 class={style.personform}
                 onSubmit={e => {
@@ -418,12 +418,45 @@ export default class Home extends Component {
                   })
                   : null}
               </div>
-            </p>
-            <div />
+            </div>
           </div>
+
+          {state.groups.length > 2 ? (
+            <div class={style.block}>
+              <h2 class={style.blocktitle}>Group people <small>(optional)</small></h2>
+              <NewGroup
+                onNewGroup={newGroup => this.groupPeople(newGroup)}
+                people={state.groups}
+                groups={state.peopleGroups}
+              />
+
+            {groups.length !== state.groups.length
+            ? <div class={style.grouplist}>
+              { groups.map((g, i) => (
+                <div class={style.listitem}>
+                  <span>{g.join(' & ').toUpperCase()}</span>
+                  {g.length > 1 ? (
+                  <a
+                    href="#"
+                    style="color: #11515b"
+                    onClick={e => {
+                      e.preventDefault()
+                      this.removeGroup(i)
+                    }}
+                  >
+                    <Icon>delete</Icon>
+                  </a>
+                  ) : null}
+                </div>
+              )) }
+            </div>
+            : null}
+            </div>
+          ) : null}
+
           {this.state.groups.length > 1 ? (
             <div class={style.block}>
-              <h2>Add some bills</h2>
+              <h2 class={style.blocktitle}>Add some bills</h2>
               <div class={style.bills}>
                 {state.bills.map(({ group, amount, subGroup }, i) => (
                   <Bill
@@ -445,41 +478,9 @@ export default class Home extends Component {
               </div>
             </div>
           ) : null}
-          {state.groups.length > 1 && state.bills.length ? (
-            <div class={style.block}>
-              <h2>Group people <small>(optional)</small></h2>
-              <NewGroup
-                onNewGroup={newGroup => this.groupPeople(newGroup)}
-                people={state.groups}
-                groups={state.peopleGroups}
-              />
-
-              <div class={style.grouplist}>
-                {groups.length !== state.groups.length
-                  ? groups.map((g, i) => (
-                    <div class={style.listitem}>
-                      <span>{g.join(' & ').toUpperCase()}</span>
-                      {g.length > 1 ? (
-                        <a
-                          href="#"
-                          style="color: #11515b"
-                          onClick={e => {
-                            e.preventDefault()
-                            this.removeGroup(i)
-                          }}
-                        >
-                          <Icon>delete</Icon>
-                        </a>
-                      ) : null}
-                    </div>
-                  ))
-                  : null}
-              </div>
-            </div>
-          ) : null}
         </div>
 
-        {this.state.groups.length > 1 ? (
+        {this.state.groups.length > 1 && Object.keys(ownings).length ? (
           <div class={style.homewrapper + ' ' + style.blockinvert}>
             <h2 style="color: #fff">Who owns what?</h2>
             <div class={style.ownings}>
@@ -494,7 +495,7 @@ export default class Home extends Component {
                         <div class={style.owningdetail}>
                           <strong>{source.toUpperCase()}</strong>
                           <div class={style.owningarrowwrap}>
-                            <Icon class={style.owningarrow}>arrow_forward</Icon>
+                        👉
                           </div>
                           <strong>{target.toUpperCase()}</strong>
                         </div>
