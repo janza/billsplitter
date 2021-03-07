@@ -271,9 +271,16 @@ export default class Home extends Component {
       bills: [],
       peopleGroups: []
     }
+
+    var savedState = null
+
     try {
-      var savedState = JSON.parse(window.localStorage.getItem('state'))
-    } catch (err) {}
+      savedState = JSON.parse(atob(window.location.hash.substr(1)))
+    } catch (err) {
+      try {
+        var savedState = JSON.parse(window.localStorage.getItem('state'))
+      } catch (err) {}
+    }
 
     if (savedState) {
       Object.assign(initialState, savedState)
@@ -282,8 +289,9 @@ export default class Home extends Component {
   }
 
   storeState (state) {
-    var stateToStore = Object.assign({}, this.state, state)
-    window.localStorage.setItem('state', JSON.stringify(stateToStore))
+    var stateToStore = JSON.stringify(Object.assign({}, this.state, state))
+    window.location.hash = btoa(stateToStore)
+    window.localStorage.setItem('state', stateToStore)
     this.setState(state)
   }
 
