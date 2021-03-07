@@ -9,7 +9,6 @@ import Elevation from 'preact-material-components/Elevation'
 import Select from 'preact-material-components/Select'
 import Checkbox from 'preact-material-components/Checkbox'
 import List from 'preact-material-components/List'
-import Icon from 'preact-material-components/Icon'
 
 const Button = props => (
   <button {...props} class={style.button}>
@@ -180,7 +179,7 @@ class Bill extends Component {
         </div>
         {props.subGroup.length !== props.totalList.length ? (
           <div class={style.billsplit}>
-            <Icon style={'padding-right: 10px'}>group</Icon>
+            🫂
             {props.subGroup.join(', ')}
           </div>
         ) : null}
@@ -395,7 +394,7 @@ export default class Home extends Component {
                   ? state.groups.map(name => {
                     return (
                       <span class={style.person}>
-                        <Icon>person</Icon>
+                        🧑
                         <span
                           style={
                             'text-transform: uppercase; padding-left: 6px;'
@@ -438,13 +437,12 @@ export default class Home extends Component {
                   {g.length > 1 ? (
                   <a
                     href="#"
-                    style="color: #11515b"
                     onClick={e => {
                       e.preventDefault()
                       this.removeGroup(i)
                     }}
                   >
-                    <Icon>delete</Icon>
+                    ❌
                   </a>
                   ) : null}
                 </div>

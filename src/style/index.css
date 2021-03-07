@@ -20,6 +20,10 @@ html {
 	box-sizing: border-box;
 }
 
+a {
+	text-decoration: none;
+}
+
 #app {
 	height: 100%;
 }

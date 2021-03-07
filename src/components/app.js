@@ -13,10 +13,6 @@ export default class App extends Component {
       <div id="app">
 
         <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet"/>
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/icon?family=Material+Icons"
-        />
         <Home />
       </div>
     )
